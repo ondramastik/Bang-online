@@ -1,0 +1,54 @@
+Poznámky
+
+Typy akcí béžových karet:
+akce:
+	Ovlivňuje jiné hráče:
+		- CatBalou -> Vyžaduje dodání karty protihráče
+		- Panico -> Vyžaduje dodání karty protihráče
+		- Saloon -> Vyžaduje potvrzení jednotlivých hráčů, nebo nic, ještě nevím
+		Vyžaduje odpověď hráče:
+			- Bang -> Vyžaduje kartu vedle, lze zrušit použitím barelu či schopnosti
+			- Duello -> Vyžaduje kartu Bang, poté se efekt obrátí
+			- Emporio -> Vyžaduje postupnou interakci všech hráčů
+			- Gatling -> Vyžaduje postupnou interakci všech hráčů
+			- Indiani -> Vyžaduje postupnou interakci všech hráčů
+	Neovlivňuje jiné hráče:
+		- Diligenza -> Nic nevyžaduje
+		- WellsFargo -> Nic nevyžaduje
+		- Birra -> Nic nevyžaduje
+		- Mancato -> Nic nevyžaduje
+
+
+
+Scénáře:
+	CatBalou:
+		Hráč zahrál kartu
+		Frontend odešle request do api (operace playCard)
+		Api odešle command playCard do actora GameManager
+		GameManager je ve stavu Ready
+		GameManager pošle command getPlayer do actora PlayerManager
+		Actor PlayerManager vrátí referenci na actora Player
+		GameManager pošle command playCard do reference na actora Player
+		Actor Player je ve stavu Active s podstavem SecondStage
+		Actor Player pošle command getCard do actora CardManager
+		Actor CardManager vrátí dle mappingu referenci na actora CatBalou
+		Actor Player pošle command play do reference na actora CatBalou z předchozího kroku
+		Actor CatBalou je ve stavu InHand, hráč poznamenaný ve stavu actora CatBalou je hráč který zahrál kartu
+		Actor CatBalou přepne do stavu WaitingForCard
+		Actor CatBalou pošle command waitForCard do GameManager actora
+		Actor GameManager uloží event CardAsked a přepne se do stavu CardInProgress(cardActorRef)
+		ReadSideProcesor publikuje event CardAsked a frontend upozorní hráče na potřebu vybrat kartu
+		Hráč vybral kartu
+		Frontend odešle command playCard do actora GameManager
+		Actor GameManager je ve stavu CardInProgress(cardActorRef)
+		Actor GameManager pošle command supplyCard do reference cardActorRef
+		Actor CatBalou je ve stavu WaitingForCard
+		Actor CatBalou pošle command getCard do actora CardManager
+		Actor CardManager vrátí referenci na požadovanou kartu
+		Actor CatBalou pošle command checkOwnership do karty z předchozího kroku // TODO: Vymyslet jak implementovat sdílenou logiku pro různé karty, například checkOwnership
+		Actor CatBalou pošle command discard s id přijaté karty příkazem supplyCard a své vlastní id do actora CardManager
+		Actor CardManager upraví svůj interní stav tak, aby karty přijaté v příkazu discard byly vloženy na konec balíčku karet
+		Actor CardManager pošle command discard do actorů přijatých v minulém kroku
+		Actoři karet upraví svůj interní stav na InDeck
+
+		

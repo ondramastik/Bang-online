@@ -1,0 +1,41 @@
+@startuml
+state GameManagerBehavior {
+}
+
+state CardBehavior {
+    state ReadyToDraw
+    ReadyToDraw : d
+}
+
+state "PlayerBehavior" as pb {
+    state "Active" as pb_a {
+        state "FirstStage" as pb_a_f
+        state "SecondStage" as pb_a_s
+        state "DiscardingStage" as pb_a_d
+    }
+    state Targeted
+    state Inactive
+    state Dead
+}
+
+state "CardsDeckBehavior" as cdb {
+  state "Draw" as cdb_dr <<entryPoint>>
+  state "Discard" as cdb_dc <<entryPoint>>
+
+  state "Initialised" as cdb_i
+
+  state "Discarded" as cdb_dced <<exitPoint>>
+  state "CardsDrawn" as cdb_cd <<exitPoint>>
+}
+
+pb_a_f --> cdb_dr : Draw card (2)
+cdb_dr --> cdb_i
+cdb_i --> cdb_cd
+cdb_cd --> pb_a_s : Received cards
+
+pb_a_s --> cdb_dc : Discard card
+cdb_dc --> cdb_i
+cdb_i --> cdb_dced
+cdb_dced --> pb_a_d
+pb_a_d --> cdb_dc : Discard card
+@enduml

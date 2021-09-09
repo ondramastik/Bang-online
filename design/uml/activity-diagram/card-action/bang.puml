@@ -1,0 +1,33 @@
+@startuml
+
+start
+ :cardAction(targetPlayer);
+
+#lightblue:if(player has selected a valid target player) then (yes)
+    #lightblue:if(has the player played a bang card this round?) then (yes)
+        #lightblue:if(is player Willy the kid?) then (yes)
+            #lightblue:if(does he have a volcanic?) then (yes)
+            else (no)
+                stop
+            endif
+        else (no)
+            stop
+        endif
+    else (no)
+    endif
+    else (no)
+        stop
+endif
+    :calculatePlayerRange;
+    :calculateTargetPlayerDistance;
+
+    #lightblue:if(playerRange <= targetPlayerDistance) then (true)
+        :assign card to table discarded cards group;
+    else (false)
+        stop
+    endif
+:set targetPlayer as player to respond;
+
+end
+
+@enduml

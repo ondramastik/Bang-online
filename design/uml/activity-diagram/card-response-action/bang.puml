@@ -1,0 +1,37 @@
+@startuml
+
+start
+    :cardResponseAction();
+
+    split
+        if(active card is Indiani) then (yes)
+            :set next playerToRespond;
+            if(active player is playerToRespond) then (yes))
+                :disable active card;
+                :unset playerToRespond;
+            else (no)
+            endif
+        else (no)
+            stop
+        endif
+    split again
+        if(active card is Duello) then (yes)
+
+        else (no)
+            stop
+        endif
+    split again
+        if(character is Calamity Janet) then (yes)
+            if(active card is Bang or Gatling)
+            else (no)
+                stop
+            endif
+        else (no)
+            stop
+        endif
+    end split
+    :assign card to table discarded cards group;
+
+end
+
+@enduml

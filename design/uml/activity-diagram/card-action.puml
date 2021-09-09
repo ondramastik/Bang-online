@@ -1,0 +1,59 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+start
+:cardAction(card, player);
+split
+    :Bang;
+split again
+    :Birra;
+split again
+    :Cat Balou;
+split again
+    :Diligenza;
+split again
+    :Duello;
+split again
+    :Emporio;
+split again
+    :Gatling;
+split again
+    :Indiani;
+split again
+    :Mancato;
+split again
+    :Panico;
+split again
+    :Saloon;
+split again
+    :Wells Fargo;
+split again
+    :Appaloosa;
+split again
+    :Barile;
+split again
+    :Dinamite;
+split again
+    :Mustang;
+split again
+    :Prigione;
+split again
+    :Remington;
+split again
+    :Rev Carabine;
+split again
+    :Schofield;
+split again
+    :Volcanic;
+split again
+    :Winchester;
+end split
+if(true) then (true)
+    :Success;
+    end
+else (false)
+    :Error;
+    stop
+endif
+
+@enduml

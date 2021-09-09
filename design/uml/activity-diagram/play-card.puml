@@ -1,0 +1,34 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+start
+:playCard(card, player);
+
+#lightblue:if(is it the player's turn?) then (yes)
+    :Perform card action;
+    #lightblue:if(result) then (false)
+       #pink :Bad request;
+        stop
+    else (true)
+        #palegreen:Request OK;
+    endif
+else (no)
+    #lightblue:if (Awaiting player response?) then (yes)
+        :Perform card response action;
+        #lightblue:if(result) then (false)
+            #pink:Bad request;
+            stop
+        else (true)
+            #palegreen:Request OK;
+        endif
+    else (no)
+    #pink:Bad request;
+        stop
+    endif
+endif
+
+end
+
+
+
+@enduml

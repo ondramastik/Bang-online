@@ -1,0 +1,11 @@
+@startwbs
++ Lobby manager
+++ Lobby
++++ Game manager
+++++ Player group
++++++ Player
+++++ Cards deck
++++++ Card
+++++ Character group
++++++ Character
+@endwbs

@@ -1,0 +1,54 @@
+@startuml
+
+entity "Game" as g {
+    *id  : number <<generated>>
+    --
+    *deck_card_group_id : number <<FK>>
+    *discarded_card_group_id : number <<FK>>
+}
+
+entity "Card" as c {
+    *id : number <<generated>>
+    type  : number
+    color : number
+}
+entity "CardGroup" as cg {
+    *id  : number <<generated>>
+}
+entity "CardToCardGroup" as c2cg {
+    card_id : number <<FK>>
+    card_group_id : number <<FK>>
+}
+entity "Player" as p {
+    *id  : number <<generated>>
+    *table_id : number <<FK>>
+    *hand_card_group_id : number <<FK>>
+    *table_card_group_id : number <<FK>>
+    *character_id : number <<FK>>
+    *role_id : number <<FK>>
+    *user_id : number
+    *lives : number
+}
+entity "Character" as ch {
+    *id  : number <<generated>>
+    name : text
+}
+entity "Role" as r {
+    *id  : number <<generated>>
+    name : text
+}
+
+g::id ||--|{ p::table_id
+
+cg::id ||--|| g:deck_card_group_id
+cg::id ||--|| g:discarded_card_group_id
+cg::id ||--|| p:hand_card_group_id
+cg::id ||--|| p:table_card_group_id
+cg::id ||--|| c2cg:card_group_id
+
+c::id ||--o{ c2cg:card_id
+
+ch::id ||--o{ p:character_id
+r::id ||--o{ p:role_id
+
+@enduml

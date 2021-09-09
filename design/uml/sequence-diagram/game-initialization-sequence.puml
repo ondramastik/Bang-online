@@ -1,0 +1,39 @@
+@startuml
+Lobby -> GameManager : startGame
+
+GameManager -> PlayerManager : getPlayerGroup
+
+PlayerManager -> PlayerGroup : init
+
+loop playerCount times
+    PlayerGroup -> Player : init
+
+    Player -> CharacterLogicManager: requestCharacterLogicRef
+    return characterLogicRef
+
+    Player --> PlayerGroup : characterLogicRef
+end
+
+PlayerGroup --> PlayerManager: playerGroupRef
+
+PlayerManager --> GameManager: playerGroupRef
+
+GameManager -> CardManager : getCardGroup
+CardManager -> CardGroup : init
+
+loop configuredCards times
+    CardGroup -> Card : init
+
+    Card -> CardLogicManager: requestCardLogicRef
+    return cardLogicRef
+
+    Card --> CardGroup : cardRef
+end
+
+CardGroup --> CardManager: cardGroupRef
+
+CardManager --> GameManager: cardGroupRef
+
+GameManager --> Lobby : gameStarted
+
+@enduml
