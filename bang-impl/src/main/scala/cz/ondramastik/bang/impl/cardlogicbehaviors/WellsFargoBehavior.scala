@@ -17,7 +17,7 @@ class WellsFargoBehavior(context: ActorContext[Command])
     msg match {
       case PerformAction(initiator, _, replyTo) =>
         initiator ! PlayerBehavior.Draw(3)
-        replyTo ! CardBehavior.FinishCard(initiator)
+        replyTo ! CardBehavior.FinishCard("string")
         this
     }
 

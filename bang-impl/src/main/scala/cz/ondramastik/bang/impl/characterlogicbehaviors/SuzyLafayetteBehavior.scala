@@ -17,8 +17,9 @@ class SuzyLafayetteBehavior(context: ActorContext[Command])
     msg match {
       case PerformAction(initiator, _, replyTo) =>
         initiator ! PlayerBehavior.Draw(3)
-        replyTo ! CardBehavior.FinishCard()
+        replyTo ! CardBehavior.FinishCard("nevim")
         this
+      case PerformRespondAction(_) => Behaviors.empty
     }
 
 }

@@ -18,21 +18,18 @@ PlayerGroup --> PlayerManager: playerGroupRef
 
 PlayerManager --> GameManager: playerGroupRef
 
-GameManager -> CardManager : getCardGroup
-CardManager -> CardGroup : init
+GameManager -> CardsDeck : spawnCardsDeck
 
 loop configuredCards times
-    CardGroup -> Card : init
+    CardsDeck -> Card : init
 
     Card -> CardLogicManager: requestCardLogicRef
     return cardLogicRef
 
-    Card --> CardGroup : cardRef
+    Card --> CardsDeck : cardRef
 end
 
-CardGroup --> CardManager: cardGroupRef
-
-CardManager --> GameManager: cardGroupRef
+CardsDeck --> GameManager: CardsDeckRef
 
 GameManager --> Lobby : gameStarted
 

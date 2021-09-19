@@ -20,7 +20,7 @@ class BangServiceSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll
 
   "Bang service" should {
 
-    "say hello" in {
+    /*"say hello" in {
       client.hello("Alice").invoke().map { answer =>
         answer should ===("Hello, Alice!")
       }
@@ -33,6 +33,6 @@ class BangServiceSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll
       } yield {
         answer should ===("Hi, Bob!")
       }
-    }
+    }*/
   }
 }

@@ -35,12 +35,12 @@ abstract class BangApplication(context: LagomApplicationContext)
   override lazy val lagomServer: LagomServer = serverFor[BangService](wire[BangServiceImpl])
 
   // Register the JSON serializer registry
-  override lazy val jsonSerializerRegistry: JsonSerializerRegistry = GameManagerSerializerRegistry
+  override lazy val jsonSerializerRegistry: JsonSerializerRegistry = BangSerializationRegistry
 
   // Initialize the sharding of the Aggregate. The following starts the aggregate Behavior under
   // a given sharding entity typeKey.
   clusterSharding.init(
-    Entity(PlayerManagerState.typeKey)(
+    Entity(GameManagerBehavior.State.typeKey)(
       entityContext => GameManagerBehavior.create(entityContext)
     )
   )

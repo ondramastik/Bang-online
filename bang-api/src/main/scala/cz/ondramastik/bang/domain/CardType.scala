@@ -1,8 +1,6 @@
 package cz.ondramastik.bang.domain
 
 object CardType extends Enumeration {
-  type CardType = Value
-
   val Bang,
   Birra,
   CatBalou,
