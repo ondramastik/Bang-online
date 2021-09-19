@@ -40,8 +40,8 @@ abstract class BangApplication(context: LagomApplicationContext)
   // Initialize the sharding of the Aggregate. The following starts the aggregate Behavior under
   // a given sharding entity typeKey.
   clusterSharding.init(
-    Entity(GameManagerBehavior.State.typeKey)(
-      entityContext => GameManagerBehavior.create(entityContext)
+    Entity(GameBehavior.State.typeKey)(
+      entityContext => GameBehavior.create(entityContext)
     )
   )
 

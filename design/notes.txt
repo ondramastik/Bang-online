@@ -18,30 +18,28 @@ akce:
 		- Birra -> Nic nevyžaduje
 		- Mancato -> Nic nevyžaduje
 
-
-
 Scénáře:
 	CatBalou:
 		Hráč zahrál kartu
 		Frontend odešle request do api (operace playCard)
-		Api odešle command playCard do actora GameManager
-		GameManager je ve stavu Ready
-		GameManager pošle command getPlayer do actora PlayerManager
+		Api odešle command playCard do actora Game
+		Game je ve stavu Ready
+		Game pošle command getPlayer do actora PlayerManager
 		Actor PlayerManager vrátí referenci na actora Player
-		GameManager pošle command playCard do reference na actora Player
+		Game pošle command playCard do reference na actora Player
 		Actor Player je ve stavu Active s podstavem SecondStage
 		Actor Player pošle command getCard do actora CardManager
 		Actor CardManager vrátí dle mappingu referenci na actora CatBalou
 		Actor Player pošle command play do reference na actora CatBalou z předchozího kroku
 		Actor CatBalou je ve stavu InHand, hráč poznamenaný ve stavu actora CatBalou je hráč který zahrál kartu
 		Actor CatBalou přepne do stavu WaitingForCard
-		Actor CatBalou pošle command waitForCard do GameManager actora
-		Actor GameManager uloží event CardAsked a přepne se do stavu CardInProgress(cardActorRef)
+		Actor CatBalou pošle command waitForCard do Game actora
+		Actor Game uloží event CardAsked a přepne se do stavu CardInProgress(cardActorRef)
 		ReadSideProcesor publikuje event CardAsked a frontend upozorní hráče na potřebu vybrat kartu
 		Hráč vybral kartu
-		Frontend odešle command playCard do actora GameManager
-		Actor GameManager je ve stavu CardInProgress(cardActorRef)
-		Actor GameManager pošle command supplyCard do reference cardActorRef
+		Frontend odešle command playCard do actora Game
+		Actor Game je ve stavu CardInProgress(cardActorRef)
+		Actor Game pošle command supplyCard do reference cardActorRef
 		Actor CatBalou je ve stavu WaitingForCard
 		Actor CatBalou pošle command getCard do actora CardManager
 		Actor CardManager vrátí referenci na požadovanou kartu
@@ -51,4 +49,22 @@ Scénáře:
 		Actor CardManager pošle command discard do actorů přijatých v minulém kroku
 		Actoři karet upraví svůj interní stav na InDeck
 
-		
+    Inicializace hráčů:
+        Actor Game naspawnuje actora PlayerGroup se seznamem hráčů
+        Actor PlayerGroup naspawnuje actora Player pro každého hráče
+        Actor PlayerGroup pošle command Initialise všem actorům Player a dodá jim tím dvě náhodné postavy a roli
+        Actor Player se přepne do stavu WaitingForCharacterSelection a dá vědět do PlayerGroup že tak učinil // TODO: Vymyslet protokol
+        Actor PlayerGroup pošle command SetPlayerGroupInitialised do actora Game
+        Game se přepne do stavu SelectingCharacters
+        Hráč pošle id charakteru který si přeje do actora Game commandem SelectCharacter(playerId, characterId)
+        Game pošle command SelectCharacter(playerId, characterId) do actora PlayerGroup
+        Actor playerGroup pošle command SelectCharacter do actora Player dle playerId
+        Actor Player pošle command Draw(počet karet dle characteru) do Actora CardsDeck // TODO: Popřemýšlet zdali by nebylo moudřejší inicializační část vytáhnout do separátního aktora
+        Actor Player pošle command RequestCharacterLogicRef do Actora CharacterLogicManager
+        Actor CardsDeck pošle command SupplyCards(cardRefs) do actora Player
+        Actor CharacterLogicManager pošle command SupplyCharacterLogicRef do actora Player
+        Actor Player změní stav na Initialised a následně pošle command SetPlayerInitialised do actora PlayerGroup
+        Actor PlayerGroup vyčká dokud neobdrží command SetPlayerInitialised od všech Playerů
+        Actor PlayerGroup pošle command Initialised do actora Game
+        Actor Game upraví svůj interní stav na FirstStage(id hráče na tahu, tedy šerif)
+

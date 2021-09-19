@@ -18,10 +18,9 @@ import com.lightbend.lagom.scaladsl.persistence.{
 }
 
 import java.time.Duration
-import java.util.UUID
 import scala.collection.immutable.Seq
 
-object GameManagerBehavior {
+object GameBehavior {
 
   implicit val timeout: Timeout = Timeout.create(Duration.ofSeconds(20))
 
@@ -58,11 +57,12 @@ object GameManagerBehavior {
   case class PlayCard(cardId: String, replyTo: ActorRef[StatusReply[String]])
       extends Command
 
-  case class SupplyPlayerGroupRef(ref: ActorRef[PlayerGroupBehavior.Command])
-      extends Command
+  case class SetPlayerGroupInitialized(
+    ref: ActorRef[PlayerGroupBehavior.Command]
+  ) extends Command
 
-  case class SupplyCardsDeckRef(ref: ActorRef[CardsDeckBehavior.Command])
-    extends Command
+  case class SetCardsDeckInitialized(ref: ActorRef[CardsDeckBehavior.Command])
+      extends Command
 
   sealed trait State {
     def applyCommand(cmd: Command)(
@@ -76,7 +76,7 @@ object GameManagerBehavior {
 
     def initial: State = new Empty
 
-    val typeKey = EntityTypeKey[Command]("GameManagerAggregate")
+    val typeKey = EntityTypeKey[Command]("GameAggregate")
   }
 
   class Empty extends State {
@@ -86,63 +86,74 @@ object GameManagerBehavior {
     )(implicit ctx: ActorContext[Command]): ReplyEffect[Event, State] =
       cmd match {
         case x: StartGame =>
+          val pgbr = ctx.spawn(PlayerGroupBehavior.create("test"), "GameTest")
+          val cdbr =
+            ctx.spawn(CardsDeckBehavior.create("test"), "CardsDeckTest")
           Effect
-            .persist(StartGameReceived(x.replyTo))
+            .persist(StartGameReceived(x.replyTo, pgbr, cdbr))
             .thenRun(
               (_: State) =>
-                ctx
-                  .spawn(PlayerManagerBehavior.apply(), "PlayerManagerBehavior")
-                  ! PlayerManagerBehavior
-                    .RequestPlayerGroupRef(UUID.randomUUID().toString, ctx.self)
+                pgbr ! PlayerGroupBehavior.Initialise(Seq("ondra"), ctx.self)
             )
-            .thenNoReply()
+            .thenRun(
+              (_: State) => cdbr ! CardsDeckBehavior.Initialise(ctx.self)
+            )
+            .thenNoReply
       }
 
     override def applyEvent(evt: Event): State =
       evt match {
-        case StartGameReceived(originRef) => Starting(originRef, None, None)
+        case StartGameReceived(originRef, playerGroupRef, cardsDeckRef) =>
+          Starting(originRef, playerGroupRef, cardsDeckRef)
       }
   }
 
   case class Starting(
     replyTo: ActorRef[StatusReply[String]],
-    playerGroupRef: Option[ActorRef[PlayerGroupBehavior.Command]],
-    cardGroupRef: Option[ActorRef[CardsDeckBehavior.Command]]
+    playerGroupRef: ActorRef[PlayerGroupBehavior.Command],
+    cardGroupRef: ActorRef[CardsDeckBehavior.Command],
+    isPlayerGroupInitialized: Boolean = false,
+    isCardsDeckInitialized: Boolean = false
   ) extends State {
 
     override def applyCommand(
       cmd: Command
     )(implicit ctx: ActorContext[Command]): ReplyEffect[Event, State] =
       cmd match {
-        case SupplyPlayerGroupRef(ref) =>
+        case SetPlayerGroupInitialized(ref) =>
           Effect
-            .persist(PlayerGroupRefReceived(ref))
+            .persist(PlayerGroupInitialized(ref))
+            .thenRun(
+              (_: State) =>
+                if (isCardsDeckInitialized)
+                  replyTo ! StatusReply
+                    .success("Done") // TODO: I dont like this
+            )
             .thenNoReply()
-        case SupplyCardsDeckRef(ref) =>
+        case SetCardsDeckInitialized(ref) =>
           Effect
-            .persist(CardGroupRefReceived(ref))
+            .persist(CardGroupInitialized(ref))
+            .thenRun(
+              (_: State) =>
+                if (isPlayerGroupInitialized)
+                  replyTo ! StatusReply.success("Done") // TODO: And this
+            )
             .thenNoReply()
       }
 
     override def applyEvent(evt: Event): State = {
-      this match {
-        case Starting(_, None, None) =>
-          evt match {
-            case PlayerGroupRefReceived(ref) =>
-              Starting(this.replyTo, Some(ref), this.cardGroupRef)
-            case CardGroupRefReceived(ref) =>
-              Starting(this.replyTo, this.playerGroupRef, Some(ref))
+      evt match {
+        case PlayerGroupInitialized(_) =>
+          if (this.isCardsDeckInitialized)
+            Ready(this.playerGroupRef, this.cardGroupRef)
+          else {
+            copy(isPlayerGroupInitialized = true)
           }
-        case Starting(_, None, Some(_)) =>
-          evt match {
-            case PlayerGroupRefReceived(ref) =>
-              Ready(ref, this.cardGroupRef.get)
-          }
-        case Starting(_, Some(_), None) =>
-          evt match {
-            case CardGroupRefReceived(ref) =>
-              Ready(this.playerGroupRef.get, ref)
-          }
+        case CardGroupInitialized(_) =>
+          if (this.isPlayerGroupInitialized)
+            Ready(this.playerGroupRef, this.cardGroupRef)
+          else
+            copy(isCardsDeckInitialized = true)
       }
     }
   }
@@ -206,16 +217,19 @@ object GameManagerBehavior {
 
   case class CardActionFinished(message: String) extends Event
 
-  case class PlayerGroupRefReceived(ref: ActorRef[PlayerGroupBehavior.Command])
+  case class PlayerGroupInitialized(ref: ActorRef[PlayerGroupBehavior.Command])
       extends Event
 
-  case class CardGroupRefReceived(ref: ActorRef[CardsDeckBehavior.Command])
+  case class CardGroupInitialized(ref: ActorRef[CardsDeckBehavior.Command])
       extends Event
 
   case class CardPlayed(cardId: String, replyTo: ActorRef[StatusReply[String]])
       extends Event
 
-  case class StartGameReceived(originRef: ActorRef[StatusReply[String]])
-      extends Event
+  case class StartGameReceived(
+    originRef: ActorRef[StatusReply[String]],
+    playerGroupRef: ActorRef[PlayerGroupBehavior.Command],
+    cardsDeckRef: ActorRef[CardsDeckBehavior.Command]
+  ) extends Event
 
 }

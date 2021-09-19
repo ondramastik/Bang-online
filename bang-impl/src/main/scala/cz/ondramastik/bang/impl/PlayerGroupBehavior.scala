@@ -41,7 +41,7 @@ object PlayerGroupBehavior {
 
   case class Initialise(
     playerIds: Seq[String],
-    replyTo: ActorRef[GameManagerBehavior.Command]
+    replyTo: ActorRef[GameBehavior.Command]
   ) extends Command
 
   case class SupplyPlayerRef(
@@ -92,9 +92,9 @@ object PlayerGroupBehavior {
   }
 
   case class Initialising(
-    replyTo: ActorRef[GameManagerBehavior.Command],
-    playerIds: Seq[String],
-    playerIdToActor: Map[String, ActorRef[PlayerBehavior.Command]]
+                           replyTo: ActorRef[GameBehavior.Command],
+                           playerIds: Seq[String],
+                           playerIdToActor: Map[String, ActorRef[PlayerBehavior.Command]]
   ) extends State {
 
     override def applyCommand(
@@ -107,7 +107,7 @@ object PlayerGroupBehavior {
             .thenRun(
               (_: State) =>
                 if (playerIds.length.equals(playerIdToActor.size + 1)) { // TODO: Think about this redudant logic, can it be prevented?
-                  replyTo ! GameManagerBehavior.SupplyPlayerGroupRef(ctx.self)
+                  replyTo ! GameBehavior.SetPlayerGroupInitialized(ctx.self)
                 }
             )
             .thenNoReply
@@ -155,7 +155,7 @@ object PlayerGroupBehavior {
 
   case class InitialisationStarted(
     playerIds: Seq[String],
-    replyTo: ActorRef[GameManagerBehavior.Command]
+    replyTo: ActorRef[GameBehavior.Command]
   ) extends Event
 
   case class PlayerRefSupplied(

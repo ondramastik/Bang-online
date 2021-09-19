@@ -1,24 +1,9 @@
 @startuml
-Lobby -> GameManager : startGame
+Lobby -> Game : startGame
 
-GameManager -> PlayerManager : getPlayerGroup
+Game -> PlayerGroup : spawnPlayerGroup
 
-PlayerManager -> PlayerGroup : init
-
-loop playerCount times
-    PlayerGroup -> Player : init
-
-    Player -> CharacterLogicManager: requestCharacterLogicRef
-    return characterLogicRef
-
-    Player --> PlayerGroup : characterLogicRef
-end
-
-PlayerGroup --> PlayerManager: playerGroupRef
-
-PlayerManager --> GameManager: playerGroupRef
-
-GameManager -> CardsDeck : spawnCardsDeck
+PlayerGroup -> CardsDeck : spawnCardsDeck
 
 loop configuredCards times
     CardsDeck -> Card : init
@@ -29,8 +14,20 @@ loop configuredCards times
     Card --> CardsDeck : cardRef
 end
 
-CardsDeck --> GameManager: CardsDeckRef
+CardsDeck --> PlayerGroup: cardsDeckRef
 
-GameManager --> Lobby : gameStarted
+
+loop playerCount times
+    PlayerGroup -> Player : init
+
+    Player -> CharacterLogicManager: requestCharacterLogicRef
+    return characterLogicRef
+
+    Player --> PlayerGroup : characterLogicRef
+end
+
+PlayerGroup --> Game: playerGroupRef
+
+Game --> Lobby : gameStarted
 
 @enduml

@@ -35,7 +35,7 @@ object CardsDeckBehavior {
 
   sealed trait Command extends Serializable
 
-  case class Initialise(gameManagerRef: ActorRef[GameManagerBehavior.Command])
+  case class Initialise(gameRef: ActorRef[GameBehavior.Command])
       extends Command
 
   case class SupplyCardRef(cardId: String, ref: ActorRef[CardBehavior.Command])
@@ -66,9 +66,9 @@ object CardsDeckBehavior {
       cmd: Command
     )(implicit ctx: ActorContext[Command]): ReplyEffect[Event, State] =
       cmd match {
-        case Initialise(gameManagerRef) =>
+        case Initialise(gameRef) =>
           Effect
-            .persist(InitialisationStarted(gameManagerRef))
+            .persist(InitialisationStarted(gameRef))
             .thenRun(
               (_: State) =>
                 initCards.map(
@@ -82,14 +82,14 @@ object CardsDeckBehavior {
 
     override def applyEvent(evt: Event): State =
       evt match {
-        case InitialisationStarted(gameManagerRef) =>
-          Initialising(gameManagerRef, Map.empty)
+        case InitialisationStarted(gameRef) =>
+          Initialising(gameRef, Map.empty)
       }
   }
 
   case class Initialising(
-    gameManagerRef: ActorRef[GameManagerBehavior.Command], // TODO: Like this?
-    cardIdToActor: Map[String, ActorRef[CardBehavior.Command]]
+                           gameRef: ActorRef[GameBehavior.Command], // TODO: Like this?
+                           cardIdToActor: Map[String, ActorRef[CardBehavior.Command]]
   ) extends State {
 
     override def applyCommand(
@@ -102,7 +102,7 @@ object CardsDeckBehavior {
             .thenRun(
               (_: State) =>
                 if (initCards.size >= cardIdToActor.size - 1) { // TODO: Think about this redudant logic, can it be prevented?
-                  gameManagerRef ! GameManagerBehavior.SupplyCardsDeckRef(ctx.self)
+                  gameRef ! GameBehavior.SetCardsDeckInitialized(ctx.self)
                 }
             )
             .thenNoReply
@@ -112,15 +112,15 @@ object CardsDeckBehavior {
       evt match {
         case CardRefSupplied(cardId, ref) =>
           if (initCards.size >= cardIdToActor.size - 1)
-            Initialised(gameManagerRef, cardIdToActor + (cardId -> ref))
+            Initialised(gameRef, cardIdToActor + (cardId -> ref))
           else
-            Initialising(gameManagerRef, cardIdToActor + (cardId -> ref))
+            Initialising(gameRef, cardIdToActor + (cardId -> ref))
       }
   }
 
   case class Initialised(
-    gameManagerRef: ActorRef[GameManagerBehavior.Command],
-    cardIdToActor: Map[String, ActorRef[CardBehavior.Command]]
+                          gameRef: ActorRef[GameBehavior.Command],
+                          cardIdToActor: Map[String, ActorRef[CardBehavior.Command]]
   ) extends State {
 
     override def applyCommand(
@@ -134,9 +134,9 @@ object CardsDeckBehavior {
             )
         case FinishCard(cardId) =>
           Effect.none
-            .thenReply(gameManagerRef)(
+            .thenReply(gameRef)(
               (_: State) =>
-                GameManagerBehavior
+                GameBehavior
                   .CardFinished("Super, dokonceno, karta ".concat(cardId))
             )
       }
@@ -155,7 +155,7 @@ object CardsDeckBehavior {
   }
 
   case class InitialisationStarted(
-    gameManagerRef: ActorRef[GameManagerBehavior.Command]
+    gameRef: ActorRef[GameBehavior.Command]
   ) extends Event
 
   case class CardRefSupplied(

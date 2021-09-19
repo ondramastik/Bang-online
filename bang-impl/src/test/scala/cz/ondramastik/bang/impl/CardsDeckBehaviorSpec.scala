@@ -18,13 +18,13 @@ class CardsDeckBehaviorSpec
 
   "Cards deck behavior" should {
     "send SupplyCardsDeckRef command after Initialization is done" in {
-      val probe = createTestProbe[GameManagerBehavior.Command]()
+      val probe = createTestProbe[GameBehavior.Command]()
 
       val ref = spawn(CardsDeckBehavior.create("game-1"))
 
       ref ! CardsDeckBehavior.Initialise(probe.ref)
 
-      probe.expectMessageType[GameManagerBehavior.SupplyCardsDeckRef]
+      probe.expectMessageType[GameBehavior.SetCardsDeckInitialized]
     }
   }
 }
