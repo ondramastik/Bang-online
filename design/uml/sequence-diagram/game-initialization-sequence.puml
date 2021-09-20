@@ -1,4 +1,6 @@
 @startuml
+
+actor User
 Lobby -> Game : startGame
 
 Game -> PlayerGroup : spawnPlayerGroup
@@ -27,6 +29,32 @@ loop playerCount times
 end
 
 PlayerGroup --> Game: playerGroupRef
+
+Game --> Lobby : gameInitialisationStarted
+
+
+
+loop Each player
+    User -> Lobby : selectCharacter(characterId)
+
+    Lobby -> Game : selectCharacter
+
+    Game -> PlayerGroup : selectCharacter(characterId)
+
+    PlayerGroup -> Player : selectCharacter(characterId)
+
+    loop Count of card based on selected character
+        Player -> CardsDeck : draw
+        return ack
+    end
+
+    Player -> CharacterLogicManager : requestCharacterLogicRef
+    return supplyCharacterLogicRef
+
+    Player -> PlayerGroup : setPlayerInitialised
+end
+
+PlayerGroup -> Game : initialised
 
 Game --> Lobby : gameStarted
 

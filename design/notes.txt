@@ -61,7 +61,7 @@ Scénáře:
         Actor playerGroup pošle command SelectCharacter do actora Player dle playerId
         Actor Player pošle command Draw(počet karet dle characteru) do Actora CardsDeck // TODO: Popřemýšlet zdali by nebylo moudřejší inicializační část vytáhnout do separátního aktora
         Actor Player pošle command RequestCharacterLogicRef do Actora CharacterLogicManager
-        Actor CardsDeck pošle command SupplyCards(cardRefs) do actora Player
+        Actor CardsDeck pošle command SupplyCards(cardRefs) do actora Player // TODO: Cekat na ack?
         Actor CharacterLogicManager pošle command SupplyCharacterLogicRef do actora Player
         Actor Player změní stav na Initialised a následně pošle command SetPlayerInitialised do actora PlayerGroup
         Actor PlayerGroup vyčká dokud neobdrží command SetPlayerInitialised od všech Playerů
