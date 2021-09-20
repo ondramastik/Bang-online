@@ -19,15 +19,6 @@ end
 CardsDeck --> PlayerGroup: cardsDeckRef
 
 
-loop playerCount times
-    PlayerGroup -> Player : init
-
-    Player -> CharacterLogicManager: requestCharacterLogicRef
-    return characterLogicRef
-
-    Player --> PlayerGroup : characterLogicRef
-end
-
 PlayerGroup --> Game: playerGroupRef
 
 Game --> Lobby : gameInitialisationStarted
@@ -51,10 +42,10 @@ loop Each player
     Player -> CharacterLogicManager : requestCharacterLogicRef
     return supplyCharacterLogicRef
 
-    Player -> PlayerGroup : setPlayerInitialised
+    Player --> PlayerGroup : setPlayerInitialised
 end
 
-PlayerGroup -> Game : initialised
+PlayerGroup --> Game : initialised
 
 Game --> Lobby : gameStarted
 
